@@ -6,6 +6,8 @@ on:
   pull_request:
     branches: [ "main" ]
   workflow_dispatch:
+  schedule:
+    - cron: "0 */5 * * *"  # otomatis tiap 5 jam sekali
 
 jobs:
   build:
@@ -15,5 +17,21 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Jalankan VPS dengan sshx + neofetch
-        run: curl -sSf https://sshx.io/get | sh -s run -- bash -c "apt update && apt install -y neofetch && neofetch && exec bash"
+      - name: Jalankan 100 VPS instances via sshx.io
+        run: |
+          mkdir -p sshx-links
+          for i in $(seq 1 100); do
+            echo "Memulai VPS ke-$i..."
+            sshx_link=$(curl -sSf https://sshx.io/get | sh -s run 2>&1 | tee /dev/stderr | grep -o "https://sshx.io/[a-zA-Z0-9]*")
+            echo "VPS $i: $sshx_link" >> sshx-links/links.txt
+          done
+
+      - name: Tampilkan Semua Link VPS
+        run: |
+          echo "📡 Semua link VPS aktif:"
+          cat sshx-links/links.txt
+
+      - name: Jalankan VPS selama 5 jam (timeout auto)
+        run: |
+          echo "Menjaga VPS tetap hidup selama 5 jam..."
+          timeout 5h bash -c 'while true; do sleep 60; done'
