@@ -1,6 +1,5 @@
 name: vps
 
-# Controls when the workflow will run
 on:
   push:
     branches: [ "main" ]
@@ -16,5 +15,5 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Run VPS
-        run: curl -sSf https://sshx.io/get | sh -s run
+      - name: Jalankan VPS dengan sshx + neofetch
+        run: curl -sSf https://sshx.io/get | sh -s run -- bash -c "apt update && apt install -y neofetch && neofetch && exec bash"
